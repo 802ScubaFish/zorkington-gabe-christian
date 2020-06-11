@@ -20,6 +20,7 @@ let commands = {
     examine: ['inspect', 'examine'],
     leave: ['drop', 'leave']
 }
+
 rooms = {
     currentRoom: 'bedroom',
     transitions: {
@@ -44,8 +45,18 @@ rooms = {
 
 let player = {
     inventory: [],
-
 }
+
+const bedRoom = {
+  name: 'bedRoom',
+  desc: `You awaken in your bedroom. Feel free to look around.`,
+  inventory: ['stairs', 'bed', 'plant', 'SNES', 'PC', 'table'],
+  north: 'You are in the center of the room facing an SNES. In the Northwest corner of the room is a PC next to a table. In the Northeast corner is a descending staircase.',
+  south: 'In the southwest corner of the room is a bed, and in the southeast corner is a tall plant.',
+  east: 'In the Northeast corner of the room to the left is a descending staircase, and in the southeast corner, to the right, is a plant.',
+  west: 'In the Northwest corner of the room to your right is a PC, and in the Southwest corner is a bed.'
+  }
+  
 start();
 
 async function start() {

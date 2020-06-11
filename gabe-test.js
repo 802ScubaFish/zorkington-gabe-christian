@@ -48,10 +48,7 @@ const player = {
 }
 
 const SNES = {
-  desc: `${player.name} is playing the SNES. Okay! It's time to go!`,
-  describe() {
-    console.log(this.desc)
-  }
+  desc: `${player.name} is playing the SNES. Okay! It's time to go!`
 }
 
 const rival = {
@@ -99,57 +96,69 @@ function enterState(newState) {
 
 async function start() {
   let input = await ask (`>_`);
-  sanitize(input);
 
   if (input === ``) {
-    start();
-  } if (input === `help`) {
-    console.log(`Type "go", "move", or "walk" plus "door" or "stairs" to change player location.\nType "take", "pick up" or "withdraw" plus the name of an item to take that item. Other commands are "inspect", "read", "talk", "use", "drop", or "inventory".`)
+    console.log(`Please type in a command.`)
+    return start();
   }
-  if (currentState === 'bedRoom') {
-    if (commands.go.includes(input) || commands.use.includes(input)) {
-      if (input.includes(`stairs`)) {
+  sanitize(input);
+
+  if(input.includes('examine')) {
+    console.log(`You are facing ${player.facing}.`);
+    console.log(currentState[player.facing]);
+    return start();
+  }
+  if (input === `help`) {
+    console.log(`Type "go", "move", or "walk" plus "door" or "stairs" to change player location.\nType "take", "pick up" or "withdraw" plus the name of an item to take that item. Other commands are "inspect", "read", "talk", "use", "drop", or "inventory".`);
+    return start();
+  } else if (commands.go.includes(input) && input.includes('stairs')) {
         enterState('downStairs');
-        start();
-      } if (commands.inspect.includes(input)) {
-          if (answer.includes('SNES')) {
-          console.log(`${player.name} is playing the SNES. Okay! It's time to go!`);
-          start();
-        }
-      }
-    }
-  }
-  else if (commands.inspect.includes(input)) {
-    if (input.includes('north')) {
-      player.facing = 'north'
-      console.log(states.playerState[player.facing])
-      start();
-    }
-  } else {
+        return start();
+    }       //if the user types "inspect", "look", or "examine"
+         else if (input.includes('look') && input.includes('north')) {
+            player.facing = 'north';
+            console.log(states.currentState[player.facing])
+            return start();
+          } else if (input.includes('look') && input.includes('south')) {
+            player.facing = 'south';
+            console.log(states.currentState[player.facing])
+            return start();
+          } else if (input.includes('east')) {
+            player.facing = 'east';
+            console.log(states.currentState[player.facing])
+            return start();
+          } else if (input.includes('west')) {
+            player.facing = 'west';
+            console.log(states.currentState[player.facing])
+            return start();
+          } if (input.includes('snes')) {
+            console.log(SNES.desc);
+            return start();
+            }
+      } else {
     console.log(`I do not understand that command.`);
-    start();
+    return start();
   }
 }
-start();
 
 play();
 
 async function play() {
-  await ask('OAK: Hello there! Welcome to the //world of Pokemon! My name is Oak. People call //me the "Pokemon prof". This world is //inhabited by creatures called Pokemon! For //some people, Pokemon are pets, others use //them for fights.');
+  await ask('OAK: Hello there! Welcome to the world of Pokemon! My name is Oak. \nPeople call me the "Pokemon prof". This world is inhabited by creatures called Pokemon! For some people, Pokemon are pets, others use them for fights.');
   await ask(`Myself...`);
   await ask(`I study Pokemon as a profession.`);
-  player.name = await ask(`First, what is your //name?(Enter Red, Ash, Jack, or a new name //entirely.)\n>_`);
+  player.name = await ask(`First, what is your name?(Enter Red, Ash, Jack, or a new name entirely.)\n>_`);
   if (player.name === ``) {
     player.name = `Jack`
   }
-  console.log(`This is my grandson. He's been //your rival since you were a baby.`);
-  rival.name = await ask (`...Erm, what is his //name again? (Enter Blue, Gary, John, or a new //name entirely.)\n>_`);
+  console.log(`This is my grandson. He's been your rival since you were a baby.`);
+  rival.name = await ask (`...Erm, what is his name again? (Enter Blue, Gary, John, or a new name entirely.)\n>_`);
   if (rival.name === ``) {
-    rival.name = `Blue`;
+    rival.name = `Gary`;
   }
-  await ask (`That's right! I remember now! His //name is ${rival.name}!`);
-  console.log(`Your very own Pokemon legend is //about to unfold! A world of dreams and //adventures with Pokemon awaits! Let's go!`);
+  await ask (`That's right! I remember now! His name is ${rival.name}!`);
+  await ask(`Your very own Pokemon legend is about to unfold! A world of dreams and adventures with Pokemon awaits! Let's go!`);
   playerState = 'bedRoom';
-  console.log(`You awaken in your bedroom. Feel //free to look around.\nType "look" + the name //of a cardinal direction to look towards that //side of the room. Type "inspect" or "examine" //+ the name of an object to interact with that //object. For a more detailed list of commands, //type "help" at any time.`)
+  console.log(`You awaken in your bedroom. Feel free to look around.\nType "look" + the name of a cardinal direction to look towards that side of the room. Type "inspect" or "examine" + the name of an object to interact with that object. For a more detailed list of commands, type "help" at any time.`);
   start();
 }
