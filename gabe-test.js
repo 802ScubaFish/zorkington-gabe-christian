@@ -8,7 +8,27 @@ function ask(questionText) {
 }
 
 function sanitize(input) {
-  return input[0].toLowerCase;
+  return input.toLowerCase();
+}
+
+let GO_COMMANDS = ['go', 'move', 'walk'];
+let TAKE_COMMANDS = ['take', 'pick up'];
+let INSPECT_COMMANDS = ['inspect', 'examine', 'look'];
+let READ_COMMANDS = ['read'];
+let TALK_COMMANDS = ['talk', 'speak'];
+let USE_COMMANDS = ['use'];
+let DROP_COMMANDS = ['drop', 'leave', 'throw away'];
+let INVENTORY_COMMANDS = ['inventory', 'i', 'items', 'bag']
+
+const commands = {
+GO_COMMANDS: ['go', 'move', 'walk'],
+TAKE_COMMANDS: ['take', 'pick up'],
+INSPECT_COMMANDS: ['inspect', 'examine', 'look'],
+READ_COMMANDS: ['read'],
+TALK_COMMANDS: ['talk', 'speak'],
+USE_COMMANDS: ['use'],
+DROP_COMMANDS: ['drop', 'leave', 'throw away'],
+INVENTORY_COMMANDS: ['inventory', 'i', 'items', 'bag']
 }
 
 class Room {
@@ -26,7 +46,7 @@ class Room {
 const bedRoom = {
 name: 'bedRoom',
 desc: `You awaken in your bedroom. Feel free to look around.`,
-inventory: ['stairs', 'bed', 'plant', 'SNES', 'PC', 'table'],
+inventory: ['stairs', 'bed', 'plant', 'snes', 'pc', 'table'],
 north: 'You are in the center of the room facing an SNES. In the Northwest corner of the room is a PC next to a table. In the Northeast corner is a descending staircase.',
 south: 'In the southwest corner of the room is a bed, and in the southeast corner is a tall plant.',
 east: 'In the Northeast corner of the room to the left is a descending staircase, and in the southeast corner, to the right, is a plant.',
@@ -47,24 +67,18 @@ const player = {
 
 }
 
-const SNES = {
+const snes = {
+  name: 'snes',
   desc: `${player.name} is playing the SNES. Okay! It's time to go!`
+}
+
+const plant = {
+  desc: `It's just an old plant.`
 }
 
 const rival = {
   name: [],
   pokemon: []
-}
-
-let commands = {
-  go: ['go', 'move', 'walk'],
-  take: ['take', 'pick up'],
-  inspect: ['inspect', 'examine', 'look'],
-  read: ['read'],
-  talk: ['talk', 'speak'],
-  use: ['use'],
-  drop: ['drop', 'leave', 'throw away'],
-  inventory: ['inventory', 'i', 'items', 'bag']
 }
 
 let battleCommands = {
@@ -82,7 +96,7 @@ let states = {
   'routeOne': { canChangeTo: [ 'roomThree' ]}
 }
 
-let currentState = `bedRoom`;
+let currentState = bedRoom;
 
 function enterState(newState) {
   let validTransitions = states[currentState].canChangeTo;
@@ -94,6 +108,11 @@ function enterState(newState) {
   }
 }
 
+const lookUpTable = {
+  'plant': plant,
+  'snes': snes,
+}
+
 async function start() {
   let input = await ask (`>_`);
 
@@ -102,19 +121,33 @@ async function start() {
     return start();
   }
   sanitize(input);
+  input = input.trim();
+  input = input.split(' ');
+  let command = input[0];
+  let noun = input[input.length - 1];
 
-  if(input.includes('examine')) {
-    console.log(`You are facing ${player.facing}.`);
-    console.log(currentState[player.facing]);
-    return start();
-  }
   if (input === `help`) {
+    //command list
     console.log(`Type "go", "move", or "walk" plus "door" or "stairs" to change player location.\nType "take", "pick up" or "withdraw" plus the name of an item to take that item. Other commands are "inspect", "read", "talk", "use", "drop", or "inventory".`);
     return start();
-  } else if (commands.go.includes(input) && input.includes('stairs')) {
+  } else if (commands.GO_COMMANDS.includes(command)) {
+    if (noun.includes('stairs')) {
+    enterState('downStairs');
+    return start();
+  }
+} else if (commands.INSPECT_COMMANDS.includes(command)) {
+  if (currentState.inventory.includes(noun)) {
+    console.log(lookUpTable[noun].desc);
+    return start();
+  }
+}
+  else if (commands.GO_COMMANDS.includes(input)) {
+    if (input.includes('stairs')) {
+      console.log(`This will work. (You said "go down stairs").`)
         enterState('downStairs');
         return start();
-    }       //if the user types "inspect", "look", or "examine"
+    }
+         }       //if the user types "inspect", "look", or "examine"
          else if (input.includes('look') && input.includes('north')) {
             player.facing = 'north';
             console.log(states.currentState[player.facing])
@@ -123,19 +156,21 @@ async function start() {
             player.facing = 'south';
             console.log(states.currentState[player.facing])
             return start();
-          } else if (input.includes('east')) {
+          } else if (input.includes('look') && input.includes('east')) {
             player.facing = 'east';
             console.log(states.currentState[player.facing])
             return start();
-          } else if (input.includes('west')) {
+          } else if (input.includes('look') && input.includes('west')) {
             player.facing = 'west';
             console.log(states.currentState[player.facing])
             return start();
-          } if (input.includes('snes')) {
+          } else if (input.includes('snes')) {
             console.log(SNES.desc);
             return start();
-            }
-      } else {
+          } else if (input.includes('go') && input.includes('stairs')) {
+            return start();
+          }
+           else {
     console.log(`I do not understand that command.`);
     return start();
   }
@@ -148,9 +183,10 @@ async function play() {
   await ask(`Myself...`);
   await ask(`I study Pokemon as a profession.`);
   player.name = await ask(`First, what is your name?(Enter Red, Ash, Jack, or a new name entirely.)\n>_`);
-  if (player.name === ``) {
-    player.name = `Jack`
-  }
+  if (player.name === '') {
+    player.name = `Ash`;
+  } 
+  await ask(`That's right! Your name is ${player.name}!`)
   console.log(`This is my grandson. He's been your rival since you were a baby.`);
   rival.name = await ask (`...Erm, what is his name again? (Enter Blue, Gary, John, or a new name entirely.)\n>_`);
   if (rival.name === ``) {
