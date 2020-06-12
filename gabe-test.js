@@ -1,4 +1,5 @@
 const readline = require('readline');
+const { SSL_OP_NETSCAPE_CA_DN_BUG } = require('constants');
 const readlineInterface = readline.createInterface(process.stdin, process.stdout);
 
 function ask(questionText) {
@@ -8,7 +9,7 @@ function ask(questionText) {
 }
 
 function sanitize(input) {
-  return input.toLowerCase();
+  input.toLowerCase();
 }
 
 const commands = {
@@ -36,7 +37,7 @@ class Room {
 
 const bedRoom = {
 name: 'bedRoom',
-desc: `You awaken in your bedroom. Feel free to look around.`,
+desc: `You awaken in your bedroom, facing an SNES in the center of the room. There is a bed in the southwest corner, to the southeast stands a plant. In the northwest corner there is a PC sitting next to a table. In the northeast is a set of stairs leading down to the foyer.\nWhat would you like to do?`,
 inventory: ['stairs', 'bed', 'plant', 'snes', 'pc', 'table'],
 north: 'You are in the center of the room facing an SNES. In the Northwest corner of the room is a PC next to a table. In the Northeast corner is a descending staircase.',
 south: 'In the southwest corner of the room is a bed, and in the southeast corner is a tall plant.',
@@ -71,6 +72,20 @@ const plant = {
 const bed = {
   name: 'bed',
   desc: 'This is your bed.'
+}
+
+const pc = {
+  potionCount: 1,
+  desc: `${player.name} turned on the PC.`,
+  inventory: [`Potion x1`]
+}
+
+const table = {
+  desc: 'Just a plain table.'
+}
+
+const stairs = {
+  desc: 'This is the stairs to the foyer.'
 }
 
 const rival = {
@@ -108,6 +123,30 @@ const lookUpTable = {
   'plant': plant,
   'snes': snes,
   'stairs': stairs,
+  'pc': pc,
+  'table': table
+}
+
+async function startPc() {
+  let input = await ask('withdraw item, deposit item, toss item, log off');
+  sanitize(input);
+  input = input.trim();
+  input = input.split(' ');
+  let command = input[0];
+  let noun = input[input.length - 1];
+  if(command.includes('withdraw')) {
+    console.log(`What do you want to withdraw?`);
+    let withdraw = await ask(console.log(pc.inventory));
+    if (withdraw.includes('potion') && pc[inventory].includes('Potion x1')) {
+      let input = await ask (`How many?`);
+      if (input) {
+        pc.inventory.pop();
+        player.inventory.push('Potion x1');
+      } else {
+      console.log(`There is nothing here to withdraw.`)
+    } return startPc();
+  }
+}
 }
 
 async function start() {
@@ -143,7 +182,12 @@ async function start() {
     console.log(lookUpTable[noun].desc);
     return start();
   }
-}
+  if (noun.includes('pc')) {
+    console.log(pc.desc);
+    console.log(`What do you want to do?`)
+    startPc();
+    return start();
+  }
   else if (commands.GO_COMMANDS.includes(input)) {
     if (input.includes('stairs')) {
       console.log(`This will work. (You said "go down stairs").`)
@@ -178,6 +222,7 @@ async function start() {
     return start();
   }
 }
+}
 
 play();
 
@@ -187,7 +232,7 @@ async function play() {
   if (player.name === '') {
     player.name = `Ash`;
   } 
-  await ask(`That's right! Your name is ${player.name}!`)
+  console.log(`Right! So your name is ${player.name}!`)
   console.log(`This is my grandson. He's been your rival since you were a baby.`);
   rival.name = await ask (`...Erm, what is his name again? (Enter Blue, Gary, John, or a new name entirely.)\n>_`);
   if (rival.name === ``) {
@@ -196,6 +241,7 @@ async function play() {
   await ask (`That's right! I remember now! His name is ${rival.name}!`);
   await ask(`Your very own Pokemon legend is about to unfold! A world of dreams and adventures with Pokemon awaits! Let's go!`);
   currentState = bedRoom;
-  console.log(`You awaken in your bedroom. Feel free to look around.\nType "look" + the name of a cardinal direction to look towards that side of the room. Type "inspect" or "examine" + the name of an object to interact with that object. For a more detailed list of commands, type "help" at any time.`);
+  console.log(currentState.desc)
+  console.log(`Type "look" with the name of a cardinal direction to look at that side of the room. Type "inspect" or "examine" or "look" and the name of an object to interact with that object. For a more detailed list of commands, type "help" at any time.`);
   start();
 }
