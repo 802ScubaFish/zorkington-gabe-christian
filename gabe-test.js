@@ -11,15 +11,6 @@ function sanitize(input) {
   return input.toLowerCase();
 }
 
-let GO_COMMANDS = ['go', 'move', 'walk'];
-let TAKE_COMMANDS = ['take', 'pick up'];
-let INSPECT_COMMANDS = ['inspect', 'examine', 'look'];
-let READ_COMMANDS = ['read'];
-let TALK_COMMANDS = ['talk', 'speak'];
-let USE_COMMANDS = ['use'];
-let DROP_COMMANDS = ['drop', 'leave', 'throw away'];
-let INVENTORY_COMMANDS = ['inventory', 'i', 'items', 'bag']
-
 const commands = {
 GO_COMMANDS: ['go', 'move', 'walk'],
 TAKE_COMMANDS: ['take', 'pick up'],
@@ -73,7 +64,13 @@ const snes = {
 }
 
 const plant = {
+  name: 'plant',
   desc: `It's just an old plant.`
+}
+
+const bed = {
+  name: 'bed',
+  desc: 'This is your bed.'
 }
 
 const rival = {
@@ -102,7 +99,6 @@ function enterState(newState) {
   let validTransitions = states[currentState].canChangeTo;
   if (validTransitions.includes(newState)) {
     currentState = newState;
-    console.log(currentState.desc)
   } else {
     throw `Invalid state transition attempted from ${currentState} to ${newState}.`;
   }
@@ -111,6 +107,7 @@ function enterState(newState) {
 const lookUpTable = {
   'plant': plant,
   'snes': snes,
+  'stairs': stairs,
 }
 
 async function start() {
@@ -125,17 +122,23 @@ async function start() {
   input = input.split(' ');
   let command = input[0];
   let noun = input[input.length - 1];
-
+//if input is help it will print a command list
   if (input === `help`) {
-    //command list
     console.log(`Type "go", "move", or "walk" plus "door" or "stairs" to change player location.\nType "take", "pick up" or "withdraw" plus the name of an item to take that item. Other commands are "inspect", "read", "talk", "use", "drop", or "inventory".`);
     return start();
   } else if (commands.GO_COMMANDS.includes(command)) {
-    if (noun.includes('stairs')) {
+    if (noun.includes('stairs') || noun.includes('downstairs')) {
     enterState('downStairs');
+    console.log(`The state is ${currentState}.`)
     return start();
+  } else {
+    console.log(`I don't know where to go.`)
   }
 } else if (commands.INSPECT_COMMANDS.includes(command)) {
+  if (noun.includes('north')) {
+    player.facing = 'north';
+    console.log(currentState[player.facing])
+  }
   if (currentState.inventory.includes(noun)) {
     console.log(lookUpTable[noun].desc);
     return start();
@@ -148,7 +151,7 @@ async function start() {
         return start();
     }
          }       //if the user types "inspect", "look", or "examine"
-         else if (input.includes('look') && input.includes('north')) {
+         else if (commands.includes('look') && noun.includes('north')) {
             player.facing = 'north';
             console.log(states.currentState[player.facing])
             return start();
@@ -179,9 +182,7 @@ async function start() {
 play();
 
 async function play() {
-  await ask('OAK: Hello there! Welcome to the world of Pokemon! My name is Oak. \nPeople call me the "Pokemon prof". This world is inhabited by creatures called Pokemon! For some people, Pokemon are pets, others use them for fights.');
-  await ask(`Myself...`);
-  await ask(`I study Pokemon as a profession.`);
+  await ask('OAK: Hello there! Welcome to the world of Pokemon! My name is Oak. \nPeople call me the "Pokemon prof". This world is inhabited by creatures called Pokemon! For some people, Pokemon are pets, others use them for fights.\nMyself...\nI study Pokemon as a profession.');
   player.name = await ask(`First, what is your name?(Enter Red, Ash, Jack, or a new name entirely.)\n>_`);
   if (player.name === '') {
     player.name = `Ash`;
@@ -194,7 +195,7 @@ async function play() {
   }
   await ask (`That's right! I remember now! His name is ${rival.name}!`);
   await ask(`Your very own Pokemon legend is about to unfold! A world of dreams and adventures with Pokemon awaits! Let's go!`);
-  playerState = 'bedRoom';
+  currentState = bedRoom;
   console.log(`You awaken in your bedroom. Feel free to look around.\nType "look" + the name of a cardinal direction to look towards that side of the room. Type "inspect" or "examine" + the name of an object to interact with that object. For a more detailed list of commands, type "help" at any time.`);
   start();
 }
