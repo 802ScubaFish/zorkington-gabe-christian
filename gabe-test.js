@@ -37,7 +37,7 @@ class Room {
 
 const bedRoom = {
 name: 'bedRoom',
-desc: `You awaken in your bedroom, facing an SNES in the center of the room. There is a bed in the southwest corner, to the southeast stands a plant. In the northwest corner there is a PC sitting next to a table. In the northeast is a set of stairs leading down to the foyer.\nWhat would you like to do?`,
+desc: `You awaken in your bedroom, facing an SNES in the center of the room. There is a bed in the southwestern corner, to the southeast stands a tall potted plant. In the northwestern corner there is a PC on a stand set beside a small table. In the northeast is a set of stairs leading down to the foyer.\nWhat would you like to do?`,
 inventory: ['stairs', 'bed', 'plant', 'snes', 'pc', 'table'],
 north: 'You are in the center of the room facing an SNES. In the Northwest corner of the room is a PC next to a table. In the Northeast corner is a descending staircase.',
 south: 'In the southwest corner of the room is a bed, and in the southeast corner is a tall plant.',
@@ -75,9 +75,8 @@ const bed = {
 }
 
 const pc = {
-  potionCount: 1,
   desc: `${player.name} turned on the PC.`,
-  inventory: [`Potion x1`]
+  inventory: ['Potions x1']
 }
 
 const table = {
@@ -102,13 +101,18 @@ let battleCommands = {
 
 let states = {
   'bedRoom': { canChangeTo: [ 'downStairs' ] },
-  'downStairs': { canChangeTo: [ 'palletTown', 'downStairs' ] },
+  'downStairs': { canChangeTo: [ 'palletTown', 'bedRoom' ] },
   'palletTown': { canChangeTo: [ 'laboratory', 'routeOne', 'downStairs' ] },
   'laboratory': { canChangeTo: [ 'outSide' ]},
   'routeOne': { canChangeTo: [ 'roomThree' ]}
 }
 
-let currentState = bedRoom;
+let roomLookUpTable = {
+  'bedRoom': bedRoom,
+  'downStairs': downStairs,
+}
+
+let currentState = 'bedRoom';
 
 function enterState(newState) {
   let validTransitions = states[currentState].canChangeTo;
@@ -150,6 +154,7 @@ async function startPc() {
 }
 
 async function start() {
+  console.log(states[currentState])
   let input = await ask (`>_`);
 
   if (input === ``) {
@@ -166,34 +171,33 @@ async function start() {
     console.log(`Type "go", "move", or "walk" plus "door" or "stairs" to change player location.\nType "take", "pick up" or "withdraw" plus the name of an item to take that item. Other commands are "inspect", "read", "talk", "use", "drop", or "inventory".`);
     return start();
   } else if (commands.GO_COMMANDS.includes(command)) {
-    if (noun.includes('stairs') || noun.includes('downstairs')) {
+    if (noun.includes('stairs')) {
+      if(currentState === 'bedRoom' && (noun.includes('stairs') || noun.includes(`downstairs`))) {
     enterState('downStairs');
     console.log(`The state is ${currentState}.`)
     return start();
-  } else {
-    console.log(`I don't know where to go.`)
   }
+  if (currentState === 'downStairs') {
+    enterState('bedRoom');
+    console.log(`The state is ${currentState}.`)
+    return start();
+  }
+} 
 } else if (commands.INSPECT_COMMANDS.includes(command)) {
   if (noun.includes('north')) {
     player.facing = 'north';
     console.log(currentState[player.facing])
   }
-  if (currentState.inventory.includes(noun)) {
+  if (roomLookUpTable[currentState].inventory.includes(noun)) {
     console.log(lookUpTable[noun].desc);
     return start();
   }
   if (noun.includes('pc')) {
-    console.log(pc.desc);
+    console.log(pc.desc)
     console.log(`What do you want to do?`)
     startPc();
     return start();
   }
-  else if (commands.GO_COMMANDS.includes(input)) {
-    if (input.includes('stairs')) {
-      console.log(`This will work. (You said "go down stairs").`)
-        enterState('downStairs');
-        return start();
-    }
          }       //if the user types "inspect", "look", or "examine"
          else if (commands.includes('look') && noun.includes('north')) {
             player.facing = 'north';
@@ -222,7 +226,6 @@ async function start() {
     return start();
   }
 }
-}
 
 play();
 
@@ -240,8 +243,8 @@ async function play() {
   }
   await ask (`That's right! I remember now! His name is ${rival.name}!`);
   await ask(`Your very own Pokemon legend is about to unfold! A world of dreams and adventures with Pokemon awaits! Let's go!`);
-  currentState = bedRoom;
-  console.log(currentState.desc)
+  currentState = 'bedRoom';
+  console.log(roomLookUpTable[currentState].desc)
   console.log(`Type "look" with the name of a cardinal direction to look at that side of the room. Type "inspect" or "examine" or "look" and the name of an object to interact with that object. For a more detailed list of commands, type "help" at any time.`);
   start();
 }
