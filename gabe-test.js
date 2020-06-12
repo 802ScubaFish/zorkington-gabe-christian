@@ -36,13 +36,13 @@ class Room {
 }
 
 const bedRoom = {
-  name: 'bedRoom',
-  desc: `You awaken in your bedroom, facing an SNES in the center of the room. There is a bed in the southwest corner, to the southeast stands a plant. In the northwest corner there is a PC sitting next to a table. In the northeast is a set of stairs leading down to the foyer.\nWhat would you like to do?`,
-  inventory: ['stairs', 'bed', 'plant', 'snes', 'pc', 'table'],
-  north: 'You are in the center of the room facing an SNES. In the Northwest corner of the room is a PC next to a table. In the Northeast corner is a descending staircase.',
-  south: 'In the southwest corner of the room is a bed, and in the southeast corner is a tall plant.',
-  east: 'In the Northeast corner of the room to the left is a descending staircase, and in the southeast corner, to the right, is a plant.',
-  west: 'In the Northwest corner of the room to your right is a PC, and in the Southwest corner is a bed.'
+name: 'bedRoom',
+desc: `You awaken in your bedroom, facing an SNES in the center of the room. There is a bed in the southwestern corner, to the southeast stands a tall potted plant. In the northwestern corner there is a PC on a stand set beside a small table. In the northeast is a set of stairs leading down to the foyer.\nWhat would you like to do?`,
+inventory: ['stairs', 'bed', 'plant', 'snes', 'pc', 'table'],
+north: 'You are in the center of the room facing an SNES. In the Northwest corner of the room is a PC next to a table. In the Northeast corner is a descending staircase.',
+south: 'In the southwest corner of the room is a bed, and in the southeast corner is a tall plant.',
+east: 'In the Northeast corner of the room to the left is a descending staircase, and in the southeast corner, to the right, is a plant.',
+west: 'In the Northwest corner of the room to your right is a PC, and in the Southwest corner is a bed.'
 }
 
 const downStairs = {
@@ -110,9 +110,8 @@ const bed = {
 }
 
 const pc = {
-  potionCount: 1,
   desc: `${player.name} turned on the PC.`,
-  inventory: [`Potion x1`]
+  inventory: ['Potions x1']
 }
 
 const table = {
@@ -134,7 +133,12 @@ let states = {
   'routeOne': { canChangeTo: ['roomThree'] }
 }
 
-let currentState = bedRoom;
+let roomLookUpTable = {
+  'bedRoom': bedRoom,
+  'downStairs': downStairs,
+}
+
+let currentState = 'bedRoom';
 
 function enterState(newState) {
   let validTransitions = states[currentState].canChangeTo;
@@ -181,7 +185,8 @@ async function startPc() {
 }
 
 async function start() {
-  let input = await ask(`>_`);
+  console.log(states[currentState])
+  let input = await ask (`>_`);
 
   if (input === ``) {
     console.log(`Please type in a command.`)
@@ -311,7 +316,7 @@ async function play() {
   await ask(`That's right! I remember now! His name is ${rival.name}!`);
   await ask(`Your very own Pokemon legend is about to unfold! A world of dreams and adventures with Pokemon awaits! Let's go!`);
   currentState = 'bedRoom';
-  console.log(bedRoom.desc)
+  console.log(roomLookUpTable[currentState].desc)
   console.log(`Type "look" with the name of a cardinal direction to look at that side of the room. Type "inspect" or "examine" or "look" and the name of an object to interact with that object. For a more detailed list of commands, type "help" at any time.`);
   start();
 }
