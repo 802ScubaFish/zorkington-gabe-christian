@@ -28,18 +28,6 @@ const commands = {
     YES_ANSWERS: ['yes', 'y', 'sure', 'okay']
 }
 
-class Room {
-    constructor(name, description, inventory) {
-        this.name = name
-        this.desc = description
-        this.inventory = inventory
-        this.locked = false
-    }
-    describe() {
-        console.log(this.desc)
-    }
-}
-
 class Pokemon {
     constructor(name, type, number, height, weight, description, nickname = this.name) {
         this.name = name,
@@ -51,6 +39,8 @@ class Pokemon {
             this.nickname = nickname
     }
 }
+
+//room constructor should include fields for people, inventory, and desc, because the program reads those properties of every room.
 
 const bulbasaur = new Pokemon('Bulbasaur', 'Seed', 'No. 001', `2' 04"`, `15.00 lb`, `A strange seed was planted on its back at birth. The plant sprouts and grows with this Pokemon.`,);
 
@@ -69,13 +59,24 @@ const rival = {
     pokemon: []
 }
 
+//don't know how to print player.name or rival.name to the console without it saying undefined or just being blank.
 const palletTown = {
     desc: `Once outside, You can see ${player.name[0]}'s house to the west, ${rival.name[0]}'s house to the east, and in between them to the south, you see Prof. Oak's laboratory. To the north is the tall grass of the path known as route one. Type "home" to go to your house, "visit" to go to your rival's house, "laboratory" or "lab" to go to the lab, or "route one" to go to Route one, or type 'hint' for a hint.`,
-    hint: `Why don't you try to leave town?`
+    hint: `Why don't you try to leave town?`,
+    people: [],
+    inventory: ['player house', 'rival house', 'laboratory', 'route one']
 }
 
 const rivalHouse = {
-
+    desc: `Two potted plants sit in the south corners. Your rival's mom sits at a table in front of an open book. Bookcases occupy the north corners, and there is a map on the north wall.`,
+    inventory: ['map', 'bookcase', 'book', 'plant', ],
+    people: ['mom'],
+    book: `It's a big map! This is useful!`,
+    map: `A town map.`,
+    bookcase: 'Crammed full of Pokemon books!',
+    table: `The kitchen table.`,
+    plant: `A nice potted plant.`,
+    mom: `Hi ${player.name}! ${rival.name} is out at Grandpa's lab.`
 }
 
 const routeOne = {
@@ -85,6 +86,7 @@ const routeOne = {
 
 const bedRoom = {
     name: 'bedRoom',
+    people: [],
     describe() {
         console.log(`You awaken in your bedroom. There is a bed in the southwestern corner, and to the southeast stands a tall potted plant. In the northwestern corner there is a PC set beside a small table. In the northeast is a set of stairs leading down.\nWhat would you like to do?`)
     },
@@ -94,7 +96,7 @@ const bedRoom = {
     plant: `It's just an old plant.`,
     bed: `Your bed sits in the southwest corner of the room.`,
     pc: [`Potion x1`],
-    //attempted a full inventory system on Sunday but settled for "PC function lite" under time constraints. I intend to build on this later.
+    //tried to create an inventory system for player and pc, but settled for "pc lite" due to time constraints. Looking at this function I built, there must be a better way to do this.
     async startPc() {
         console.log(`What do you want to do?`)
         let input = await ask('Withdraw item, Deposit item, Toss item, or Log off\n>_');
@@ -125,7 +127,7 @@ const bedRoom = {
             }
         } else if (command.includes(`deposit`)) {
             console.log(`Pc inventory: ${this.pc}\nPlayer inventory: ${player.inventory}`);
-            let input = await ask(`What do you want to deposit?\n`);
+            let input = await ask(`What do you want to deposit?\n>_`);
             if (input.includes('potion')) {
                 if (player.inventory.includes(`Potion x1`)) {
                     bedRoom.pc.push(`Potion x1`);
@@ -153,6 +155,9 @@ const bedRoom = {
                     return this.startPc();
                 }
             }
+        } else {
+            console.log(`I didn't understand that command.`);
+            return this.startPc();
         }
     }
 }
@@ -170,7 +175,7 @@ const downStairs = {
 }
 
 const laboratory = {
-    desc: `You walk into the laboratory where a woman and to aides mill about in the entrance in front of a row of eight bookcases. Beyond these shelves is the lab where your rival in standing. Behind him are more rows of shelves and two books on a desk next to another PC. On a table in the middle of the lab near your rival are three of those poke balls you've been hearing about.\nWhat do you want to do?`,
+    desc: `You walk into the laboratory where a woman and two aides mill about in the entrance in front of a row of eight bookcases. Beyond these shelves is the lab where your rival in standing. Behind him are more rows of shelves and two books on a desk next to another PC. On a table in the middle of the lab near your rival are three of those poke balls you've been hearing about.\nWhat do you want to do?`,
     book: `It's encyclopedia-like, but the pages are blank!`,
     pc: `There's an email message here!\n...\nCalling all Pokemon trainers!\nThe elite trainers of Pokemon league are ready to take on all comers! Bring your best Pokemon and see how you rate as a trainer! Pokemon League HQ Indigo Plateau\nPS: Prof. Oak! Please visit us!\n...`,
     shelf: {
@@ -180,12 +185,11 @@ const laboratory = {
     pokeball: `Those are poke balls. They contain Pokemon!`,
     notpokeball: `That's Prof. Oak's last pokemon!`,
     inventory: ['pokeball1', 'pokeball2', 'pokeball3', 'book', 'pc', 'shelf', 'pokeball', 'pokeballs'],
-    people: [`${rival.name[0]}`, 'woman', 'aide'],
+    people: [`rival`, 'woman', 'aide'],
     rival: `Yo ${player.name[0]}!\nGramps isn't around!`,
-    woman: `Prof Oak is the authority on Pokemon. Many pokemon trainers hold him in high regard.`,
-    aide: `I study Pokemon as Prof. Oak's aide.`,
-    aide2: `I study Pokemon as Prof. Oak's aide.`,
-    //In this use case, "locked" means Oak is not yet in the lab and the player cannot choose a pokemon, or the player has already chosen a pokemon.
+    woman: `"Prof Oak is the authority on Pokemon. Many pokemon trainers hold him in high regard."`,
+    aide: `"I study Pokemon as Prof. Oak's aide."`,
+//In this use case, "locked" means Oak is not yet in the lab and the player cannot choose a pokemon, or the player has already chosen a pokemon.
     locked: true
 }
 
@@ -226,6 +230,7 @@ const roomLookUpTable = {
     'laboratory': laboratory
 }
 
+//Haven't gotten here, decided to cut the story at your rival chooses his pokemon, for the time being.
 async function battleState() {
     console.log(`${rival.name[0]} wants to fight!`);
     console.log(`${rival.name[0]} sent out ${capitalize(rival.pokemon[0])}`)
@@ -336,9 +341,39 @@ async function start() {
                     }
                 }
             }
+        } else if (commands.INVENTORY_COMMANDS.includes(command)) {
+            console.log(`Player inventory: ${player.inventory}`)
+            return start();
+        } else if (commands.DROP_COMMANDS.includes(command)) {
+            if (noun.includes(`potion`)) {
+                if (player.inventory.includes(`Potion x1`)) {
+                    player.inventory.pop();
+                    console.log(`Got rid of the potion.`);
+                    return start();
+                } else {
+                    console.log(`There is nothing in your inventory.`);
+                    return start();
+                }
+            } else {
+                console.log(`You can't drop the ${noun}!`);
+                return start();
+            }
+        }
+        else if (commands.TAKE_COMMANDS.includes(command)) {
+            if (roomLookUpTable[currentState].inventory.includes(noun)) {
+                    console.log(`You can't take the ${noun}.`);
+                    return start();
+            } else {
+                console.log(`There is no ${noun} in this room.`);
+                return start();
+            }
         } else if (commands.USE_COMMANDS.includes(command) || commands.INSPECT_COMMANDS.includes(command)) {
             if (roomLookUpTable[currentState].inventory.includes(noun)) {
                 if (noun === 'pc') {
+                    if (roomLookUpTable[currentState].includes('laboratory')) {
+                        console.log(laboratory.pc);
+                        return start();
+                    }
                     console.log(`${player.name[0]} turned on the PC.`)
                     roomLookUpTable[currentState].startPc();
                     return start();
@@ -370,9 +405,19 @@ async function start() {
                     console.log(roomLookUpTable[currentState].plant);
                     return start();
                 } if (noun === 'bed') {
-                    console.log(roomLookUpTable[currentState].plant);
+                    console.log(roomLookUpTable[currentState].bed);
+                    return start();
+                } if (noun === 'table') {
+                    console.log(roomLookUpTable[currentState].table);
+                    return start();
+                } else {
+                    console.log(roomLookUpTable[currentState].noun);
                     return start();
                 }
+            } else if (noun === 'potion' && player.inventory.includes(`Potion x1`)) {
+                console.log(`All healed up!`);
+                player.inventory.pop();
+                return start();
             } else {
                 console.log(`There is no ${noun} in this room.`);
                 return start();
@@ -383,26 +428,35 @@ async function start() {
                     console.log(roomLookUpTable[currentState].mom);
                     return start();
                 } else {
-                    console.log(`You can't talk to ${noun} here.`);
+                    console.log(`You can't talk to mom here.`);
                     return start();
                 }
-            } else if (noun === `${rival.name[0]}`) {
+            } else if (noun === `rival`) {
                 if (roomLookUpTable[currentState].people.includes('rival')) {
                     console.log(laboratory.rival);
+                    return start();
+                } else {
+                    console.log(`You can't talk to rival here.`);
                     return start();
                 }
             } else if (noun.includes('woman')) {
                 if (roomLookUpTable[currentState].people.includes('woman')) {
                     console.log(laboratory.woman);
                     return start();
+                } else {
+                    console.log(`You can't talk to her here.`);
+                    return start();
                 }
             } else if (noun.includes('aide')) {
-                if (roomLookUpTable[currentState].includes('aide')) {
+                if (roomLookUpTable[currentState].people.includes('aide')) {
                     console.log(laboratory.aide);
+                    return start();
+                } else {
+                    console.log(`You can't talk to aide here.`);
                     return start();
                 }
             } else if (noun.includes('oak')) {
-                if (roomLookUpTable[currentState].includes('oak')) {
+                if (roomLookUpTable[currentState].people.includes('oak')) {
                     console.log(`Oak: If a wild Pokemon appears, your Pokemon can fight against it!`);
                     return start();
                 } else {
@@ -414,12 +468,12 @@ async function start() {
                 return start();
             }
         } else if (commands.GO_COMMANDS.includes(command)) {
-            if (noun.includes(`outside`) || noun.includes(`town`)) {
+            if (noun.includes(`outside`) || noun.includes(`town`) || noun.includes(`door`) || noun.includes(`exit`)) {
                 if (currentState === 'laboratory' && rival.pokemon.length >= 1) {
                     console.log(`${rival.name[0]}: Hey! ${player.name[0]}! Let's check out our Pokemon! Come on, I'll take you on!`);
                     return battleState();
                 }
-                if (currentState === 'downStairs' || currentState === 'rivalHouse'(currentState === 'laboratory' && rival.pokemon.length <= 0)) {
+                if (currentState === 'downStairs' || currentState === 'rivalHouse' || (currentState === 'laboratory' && rival.pokemon.length <= 0)) {
                     console.log(`You exit the building to Pallet Town`)
                     enterState('palletTown');
                     return start();
@@ -470,7 +524,7 @@ async function start() {
                         return start();
                     }
                 } else {
-                    console.log('I did not recognize that location or that location is inaccessible. Would you please try again')
+                    console.log('I did not recognize that location or that location is inaccessible. Would you please try again?')
                     return start();
                 }
             } else {
