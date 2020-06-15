@@ -468,7 +468,7 @@ async function start() {
                 return start();
             }
         } else if (commands.GO_COMMANDS.includes(command)) {
-            if (noun.includes(`outside`) || noun.includes(`town`) || noun.includes(`door`) || noun.includes(`exit`)) {
+            if (noun.includes(`outside`) || noun.includes(`town`) || noun.includes(`door`) || noun.includes(`exit`) || noun.includes('out')) {
                 if (currentState === 'laboratory' && rival.pokemon.length >= 1) {
                     console.log(`${rival.name[0]}: Hey! ${player.name[0]}! Let's check out our Pokemon! Come on, I'll take you on!`);
                     return battleState();
@@ -518,9 +518,13 @@ async function start() {
                     } else {
                         console.log(routeOne.desc);
                         laboratory.locked = false;
-                        enterState('laboratory');
+                        currentState = 'laboratory';
                         laboratory.people.push('oak');
-                        console.log(`Professor Oak brings you over to his lab and takes you to the back table where your rival is standing next to a table with three Pokeballs.\n${rival.name[0]}: Gramps! I'm fed up with waiting!\nOak: ${rival.name[0]}? Let me think... Oh, that's right, I told you to come! Just wait!\nHere, ${player.name[0]}! There are 3 Pokemon here! Haha! They are inside the Poke balls. When I was young, I was a serious Pokemon trainer! In my old age, I have only 3 Pokemon left, but you can have one! Choose!\n${rival.name[0]}: Hey! Gramps! What about me?\nOak: Be patient, ${rival.name[0]}! You can have one too!\nNow, ${player.name[0]}, which Pokemon do you want? (type 1, 2, or 3 to inspect each Poke ball, respectively.)`);
+                        await ask(`Professor Oak brings you over to his lab and takes you to the back table where your rival is standing next to a table with three Pokeballs.`);
+                        await ask(`${rival.name[0]}: Gramps! I'm fed up with waiting!`);
+                        await ask(`Oak: ${rival.name[0]}? Let me think... Oh, that's right, I told you to come! Just wait!\nHere, ${player.name[0]}! There are 3 Pokemon here! Haha! They are inside the Poke balls. When I was young, I was a serious Pokemon trainer! In my old age, I have only 3 Pokemon left, but you can have one! Choose!`);
+                        await ask(`${rival.name[0]}: Hey! Gramps! What about me?`);
+                        await ask(`Oak: Be patient, ${rival.name[0]}! You can have one too!\nNow, ${player.name[0]}, which Pokemon do you want? (type 1, 2, or 3 to inspect each Poke ball, respectively.)`);
                         return start();
                     }
                 } else {
