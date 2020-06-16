@@ -42,7 +42,7 @@ class Pokemon {
 
 //room constructor should include fields for people, inventory, and desc, because the program reads those properties of every room.
 
-const bulbasaur = new Pokemon('Bulbasaur', 'Seed', 'No. 001', `2' 04"`, `15.00 lb`, `A strange seed was planted on its back at birth. The plant sprouts and grows with this Pokemon.`,);
+const bulbasaur = new Pokemon('Bulbasaur', 'Seed', 'No. 001', `2' 04"`, `15.00 lb`, `A strange seed was planted on its back at birth. The plant sprouts and grows with this Pokemon.`);
 
 const squirtle = new Pokemon('Squirtle', 'Tinyturtle', 'No. 007', `1' 08"`, `20.0 lb`, `After birth, its back swells and hardens into a shell. Powerfully sprays foam from its mouth.`)
 
@@ -60,8 +60,10 @@ const rival = {
 }
 
 //don't know how to print player.name or rival.name to the console without it saying undefined or just being blank.
+let playerName = player.name;
+let rivalName = rival.name;
 const palletTown = {
-    desc: `Once outside, You can see ${player.name[0]}'s house to the west, ${rival.name[0]}'s house to the east, and in between them to the south, you see Prof. Oak's laboratory. To the north is the tall grass of the path known as route one. Type "home" to go to your house, "visit" to go to your rival's house, "laboratory" or "lab" to go to the lab, or "route one" to go to Route one, or type 'hint' for a hint.`,
+    desc: `Once outside, You can see ${playerName}'s house to the west, ${rivalName}'s house to the east, and in between them to the south, you see Prof. Oak's laboratory. To the north is the tall grass of the path known as route one. Type "home" to go to your house, "visit" to go to your rival's house, "laboratory" or "lab" to go to the lab, or "route one" to go to Route one, or type 'hint' for a hint.`,
     hint: `Why don't you try to leave town?`,
     people: [],
     inventory: ['player house', 'rival house', 'laboratory', 'route one']
@@ -106,7 +108,7 @@ const bedRoom = {
         let command = input[0];
         let noun = input[input.length - 1];
         if (command.includes('log off') || noun.includes('off')) {
-            console.log(`Got off the PC.`)
+            console.log(`${player.name[0]} turned off the PC.`)
             return start();
         } else if (command.includes('withdraw')) {
             console.log(`Pc inventory: ${this.pc}\nPlayer inventory: ${player.inventory}`);
@@ -163,7 +165,7 @@ const bedRoom = {
 }
 
 const downStairs = {
-    inventory: ['stairs', 'TV', 'bookcase', 'door', 'kitchen table'],
+    inventory: ['stairs', 'tv', 'bookcase', 'door', 'kitchen table', 'table'],
     people: ['mom'],
     desc: `Your mom sits at a table in the middle of the room. On the north wall is a TV, and in the northwest corner is a bookcase. \nIn the northeast corner are the stairs you came down, and to the south wall is the door.`,
     mom: `MOM: Right. All boys leave home some day. It said so on TV.\nProf. Oak, next door, is looking for you.`,
@@ -178,6 +180,7 @@ const laboratory = {
     desc: `You walk into the laboratory where a woman and two aides mill about in the entrance in front of a row of eight bookcases. Beyond these shelves is the lab where your rival in standing. Behind him are more rows of shelves and two books on a desk next to another PC. On a table in the middle of the lab near your rival are three of those poke balls you've been hearing about.\nWhat do you want to do?`,
     book: `It's encyclopedia-like, but the pages are blank!`,
     pc: `There's an email message here!\n...\nCalling all Pokemon trainers!\nThe elite trainers of Pokemon league are ready to take on all comers! Bring your best Pokemon and see how you rate as a trainer! Pokemon League HQ Indigo Plateau\nPS: Prof. Oak! Please visit us!\n...`,
+    bookcase: `Crammed full of Pokemon books!`,
     shelf: {
         names: ['shelf', 'shelves', 'bookshelf', 'bookshelves', 'bookcase', 'bookcases', 'case', 'cases'],
         desc: `Crammed full of Pokemon books!`,
@@ -277,21 +280,23 @@ async function start() {
         if (command === `help` || noun === `help`) {
             console.log(`Type "go", "move", or "walk" plus "door" or "stairs" to change player location.\nType "take", "pick up" or "withdraw" plus the name of an item to take that item. Other commands are "inspect", "read", "talk", "use", "drop", or "inventory".`);
             return start();
-        } else if (currentState === laboratory) {
+//when it displays the pokemon's stats, it also shows the empty nickname key with the value of 'undefined'. Is there a good way around this?
+//I can play up to the point where you enter a nickname, but then I'm getting a type error. Too tired to work on this now, I'll test a bit more tommorrow. Alternately, I could scrap the nickname feature for the sake of this project and move on.
+        } else if (currentState === 'laboratory') {
             if (laboratory.locked === false) {
-                if (input === '1' || noun === '1') {
+                if (command === '1' || noun === '1') {
                     console.log(bulbasaur);
-                    let input = await ask(`Oak: So! You want the plant Pokemon, Bulbasaur?`);
+                    let input = await ask(`Oak: So! You want the plant Pokemon, Bulbasaur\n>_?`);
                     sanitize(input);
-                    if (input === 'yes') {
+                    if (input === 'yes' || input === 'y') {
                         console.log(`This Pokemon is really energetic!`);
                         player.pokemon.push('bulbasaur');
                         laboratory.inventory.splice(laboratory.inventory.indexOf('pokeball1'), 1)
                         console.log(`${player.name[0]} received a Bulbasaur!`);
-                        let nextVar = await ask(`Do you want to give a nickname to Charmander?`);
+                        let nextVar = await ask(`Do you want to give a nickname to Bulbasaur?\n>_`);
                         if (commands.YES_ANSWERS.includes(nextVar)) {
-                            let nickname = await ask(`Please enter a nickname.`);
-                            charmander.nickname.push(nickname);
+                            let nickName = await ask(`Please enter a nickname.\n>_`);
+                            bulbasaur.nickname.push(nickName);
                             return rivalsPick();
                         } else {
                             return rivalsPick();
@@ -301,17 +306,17 @@ async function start() {
                     }
                 } else if (input === '2' || noun === '2') {
                     console.log(squirtle);
-                    let input = await ask(`Oak: So! You want the water Pokemon, Squirtle?`);
+                    let input = await ask(`Oak: So! You want the water Pokemon, Squirtle?\n>_`);
                     sanitize(input);
-                    if (input === 'yes') {
+                    if (input === 'yes' || input === 'y') {
                         console.log(`This Pokemon is really energetic!`)
                         player.pokemon.push('squirtle');
                         laboratory.inventory.splice(laboratory.inventory.indexOf('pokeball2'), 1)
-                        console.log(`${player.name[0]} received a Squirtle!`)
-                        let nextVar = await ask(`Do you want to give a nickname to Charmander?`);
+                        console.log(`${player.name[0]} received a Squirtle!\n>_`)
+                        let nextVar = await ask(`Do you want to give a nickname to Squirtle?\n>_`);
                         if (commands.YES_ANSWERS.includes(nextVar)) {
-                            let nickname = await ask(`Please enter a nickname.`);
-                            charmander.nickname.push(nickname);
+                            let nickName = await ask(`Please enter a nickname.\n>_`);
+                            squirtle.nickname.push(nickName);
                             return rivalsPick();
                         } else {
                             return rivalsPick();
@@ -321,17 +326,17 @@ async function start() {
                     }
                 } else if (input === '3' || noun === '3') {
                     console.log(charmander);
-                    let input = await ask(`Oak: So! You want the fire Pokemon, Charmander?`);
+                    let input = await ask(`Oak: So! You want the fire Pokemon, Charmander?\n>_`);
                     sanitize(input);
-                    if (input === 'yes') {
+                    if (input === 'yes' || input === 'y') {
                         console.log(`This Pokemon is really energetic!`)
                         player.pokemon.push('charmander');
                         console.log(`${player.name[0]} received a Charmander!`);
                         laboratory.inventory.splice(laboratory.inventory.indexOf('pokeball3'), 1)
-                        let nextVar = await ask(`Do you want to give a nickname to Charmander?`);
+                        let nextVar = await ask(`Do you want to give a nickname to Charmander?\n>_`);
                         if (commands.YES_ANSWERS.includes(nextVar)) {
-                            let nickname = await ask(`Please enter a nickname.`);
-                            charmander.nickname.push(nickname);
+                            let nickName = await ask(`Please enter a nickname.\n>_`);
+                            charmander.nickname.push(nickName);
                             return rivalsPick();
                         } else {
                             return rivalsPick();
@@ -370,10 +375,10 @@ async function start() {
         } else if (commands.USE_COMMANDS.includes(command) || commands.INSPECT_COMMANDS.includes(command)) {
             if (roomLookUpTable[currentState].inventory.includes(noun)) {
                 if (noun === 'pc') {
-                    if (roomLookUpTable[currentState].includes('laboratory')) {
+                    if (roomLookUpTable[currentState] === laboratory) {
                         console.log(laboratory.pc);
                         return start();
-                    }
+                    } else if (currentState === `bedRoom`)
                     console.log(`${player.name[0]} turned on the PC.`)
                     roomLookUpTable[currentState].startPc();
                     return start();
@@ -395,7 +400,10 @@ async function start() {
                         console.log(`There are no Poke balls here!`);
                         return start();
                     }
-                } if (noun.includes('tv')) {
+                } if (noun.includes('bookcase')) {
+                    console.log(roomLookUpTable[currentState].bookcase)
+                }
+                if (noun.includes('tv')) {
                     console.log(roomLookUpTable[currentState].tv);
                     return start();
                 } if (noun === 'stairs') {
@@ -410,6 +418,19 @@ async function start() {
                 } if (noun === 'table') {
                     console.log(roomLookUpTable[currentState].table);
                     return start();
+                } if (noun === 'door' && commands.USE_COMMANDS.includes(command)) {
+                    if (currentState === 'downStairs' || currentState === 'rivalHouse' || currentState === 'laboratory') {
+                        enterState('palletTown');
+                        return start();
+                    }
+                } if (noun === 'door' && commands.INSPECT_COMMANDS.includes(command)) {
+                    if (roomLookUpTable[currentState].inventory.includes('door')) {
+                        console.log(roomLookUpTable[currentState].door);
+                        return start();
+                    } else {
+                        console.log(`There is no door here to examine.`);
+                        return start();
+                    }
                 } else {
                     console.log(roomLookUpTable[currentState].noun);
                     return start();
@@ -549,16 +570,20 @@ async function play() {
     let playersname = await ask(`First, what is your name? (Enter Red, Ash, Jack, or a new name entirely.)\n>_`);
     if (playersname === ``) {
         player.name.push(`Ash`);
+        playerName = 'Ash'
     } else {
         player.name.push(playersname);
+        playerName = playersname;
     }
     console.log(`Right! So your name is ${player.name[0]}!`)
     console.log(`This is my grandson. He's been your rival since you were a baby.`);
     let rivalsName = await ask(`...Erm, what is his name again? (Enter Blue, Gary, John, or a new name entirely.)\n>_`);
     if (rivalsName === ``) {
         rival.name.push(`Gary`);
+        rivalName = 'Gary'
     } else {
         rival.name.push(rivalsName);
+        rivalName = rivalsName;
     }
     await ask(`That's right! I remember now! His name is ${rival.name[0]}!`);
     await ask(`${player.name}!\nYour very own Pokemon legend is about to unfold! A world of dreams and adventures with Pokemon awaits! Let's go!\n`);
