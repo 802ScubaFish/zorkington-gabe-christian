@@ -8,10 +8,12 @@ function ask(questionText) {
   });
 }
 
+//converts user input to lower case
 function sanitize(input) {
   input.toLowerCase();
 }
 
+//lists all possible user commands
 const commands = {
   GO_COMMANDS: ['go', 'move', 'walk'],
   TAKE_COMMANDS: ['take', 'pick up'],
@@ -42,13 +44,20 @@ inventory: ['stairs', 'bed', 'plant', 'snes', 'pc', 'table'],
 north: 'You are in the center of the room facing an SNES. In the Northwest corner of the room is a PC next to a table. In the Northeast corner is a descending staircase.',
 south: 'In the southwest corner of the room is a bed, and in the southeast corner is a tall plant.',
 east: 'In the Northeast corner of the room to the left is a descending staircase, and in the southeast corner, to the right, is a plant.',
-west: 'In the Northwest corner of the room to your right is a PC, and in the Southwest corner is a bed.'
+west: 'In the Northwest corner of the room to your right is a PC, and in the Southwest corner is a bed.',
+plant: {
+  desc: `It's just an old plant.`
+}
 }
 
 const downStairs = {
   furniture: ['stairs', 'TV', 'bookcase', 'door', 'kitchen table'],
   people: ['mom'],
   desc: `You go down the stairs to the foyer. Your mom sits at a table in the middle of the room. On the north wall is a TV, and in the northwest corner is a bookcase. \nIn the northeast corner are the stairs you came down, and to the south wall is the door.`
+}
+
+const palletTown = {
+  name: 'pallet town'
 }
 
 const player = {
@@ -81,7 +90,7 @@ const kitchenTable = {
 
 const tv = {
   name: 'tv',
-  desc: 'Ther\'s a movie on tv. Four boys are walking on railroad tracks... I\'d better go too'
+  desc: 'There\'s a movie on tv. Four boys are walking on railroad tracks... I\'d better go too!'
 }
 
 const bookCase = {
@@ -91,11 +100,12 @@ const bookCase = {
 
 const frontDoor = {
   name: 'front door',
-  desc: 'The entrance to your childhood home'
+  insideDesc: 'The exit to your childhood home',
+  outsideDesc: 'The entrance to your childhood home'
 }
 
 const stairs = {
-  topDesc: 'This is the stairs to the foyer.',
+  topDesc: 'These are the stairs to the foyer.',
   bottomDesc: 'These stairs lead to your bedroom!'
 }
 
@@ -136,6 +146,8 @@ let states = {
 let roomLookUpTable = {
   'bedRoom': bedRoom,
   'downStairs': downStairs,
+  'palletTown': palletTown,
+
 }
 
 let currentState = 'bedRoom';
@@ -155,11 +167,6 @@ const lookUpTable = {
   'stairs': stairs,
   'pc': pc,
   'table': table
-}
-
-let roomLookUpTable = {
-  'bedRoom': bedRoom,
-  'downStairs': downStairs,
 }
 
 async function startPc() {
@@ -212,7 +219,7 @@ async function start() {
       }
     }
     else if (currentState === 'downStairs' || currentState === 'laboratory') {
-      if (noun.includes('town') || noun.includes('pallet town')) {
+      if (noun.includes('town') || noun.includes('outside')) {
         enterState('palletTown');
         console.log(`The state is ${currentState}.`)
         return start();
@@ -254,7 +261,7 @@ async function start() {
       return start();
     }
     if (noun.includes('plant')) {
-      console.log(plant.desc);
+      console.log(bedRoom.plant.desc);
       return start();
     }
     if (noun.includes('pc')) {
@@ -270,32 +277,6 @@ async function start() {
       enterState('downStairs');
       return start();
     }
-  }       //if the user types "inspect", "look", or "examine"
-  else if (commands.includes('look') && noun.includes('north')) {
-    player.facing = 'north';
-    console.log(states.currentState[player.facing])
-    return start();
-  } else if (input.includes('look') && input.includes('south')) {
-    player.facing = 'south';
-    console.log(states.currentState[player.facing])
-    return start();
-  } else if (input.includes('look') && input.includes('east')) {
-    player.facing = 'east';
-    console.log(states.currentState[player.facing])
-    return start();
-  } else if (input.includes('look') && input.includes('west')) {
-    player.facing = 'west';
-    console.log(states.currentState[player.facing])
-    return start();
-  } else if (input.includes('snes')) {
-    console.log(SNES.desc);
-    return start();
-  } else if (input.includes('go') && input.includes('stairs')) {
-    return start();
-  }
-  else {
-    console.log(`I do not understand that command.`);
-    return start();
   }
 }
 
